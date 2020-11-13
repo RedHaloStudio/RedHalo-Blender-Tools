@@ -1,1 +1,6 @@
-# Blender-Tools
+# Blender自用小工具
+
+#### change log
+##### 2020-11-13 
+1.添加生成彩色ID通道（暂时不能识别Alpha）
+2.添加把任何物体替换为激活物体
