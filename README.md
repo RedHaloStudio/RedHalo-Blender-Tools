@@ -1,6 +1,6 @@
 # Blender自用小工具
 
-##安装方式
+## 安装方式
 直接点上方的Code按钮，下载为zip压缩包。
 #### change log
 
