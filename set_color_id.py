@@ -13,6 +13,7 @@ def renderClrID(node,num,clr):
     nodes = node.node_tree.nodes
     links = node.node_tree.links
 
+    # 1st node
     for i in nodes.keys():
         t = type(nodes[i])
         if t == bpy.types.ShaderNodeOutputMaterial:
@@ -21,13 +22,22 @@ def renderClrID(node,num,clr):
     parentNode = nodes[key]
     nPos = parentNode.location
     
+    # MixShader Nodes
+    node_mixshader = nodes.new(type = "ShaderNodeMixShader")
+    node_mixshader.inputs[0].default_value = 0
+    node_mixshader.location = (parentNode.location.x - 200),(parentNode.location.y)
+
+    # Transparent Node
+    node_transparent = nodes.new(type = "ShaderNodeBsdfTransparent")
+    node_transparent.location = (node_mixshader.location.x-200),(node_mixshader.location.y-150)
+
     #node-emission shader
     node_emission = nodes.new(type="ShaderNodeEmission")
-    node_emission.location = (nPos.x-200),(nPos.y)
+    node_emission.location = (node_mixshader.location.x-200),(node_mixshader.location.y)
 
     #node light path
     node_lightPath = nodes.new(type="ShaderNodeLightPath")
-    node_lightPath.location = (nPos.x-400),(nPos.y-50)
+    node_lightPath.location = (node_emission.location.x - 200),(node_emission.location.y - 200)
 
     #HueSaturation Node
     node_HueSaturation = nodes.new(type="ShaderNodeHueSaturation")
@@ -35,12 +45,18 @@ def renderClrID(node,num,clr):
     node_HueSaturation.inputs[2].default_value = 0.99
     node_HueSaturation.inputs[4].default_value = clr
     
-    node_HueSaturation.location = (nPos.x-400),(nPos.y+150)
+    node_HueSaturation.location = (node_emission.location.x - 200),(node_emission.location.y)
     
-    links.new(node_emission.outputs[0],parentNode.inputs[0])
-    
+    links.new(node_mixshader.outputs[0],parentNode.inputs[0])
+    links.new(node_emission.outputs[0],node_mixshader.inputs[1])
+    links.new(node_transparent.outputs[0],node_mixshader.inputs[2])
     links.new(node_HueSaturation.outputs[0],node_emission.inputs[0])
-    links.new(node_lightPath.outputs[0],node_emission.inputs[1])    
+    links.new(node_lightPath.outputs[0],node_emission.inputs[1])
+
+    for i in links:
+        if i.to_socket.name == "Alpha":
+            # keepLinks = i.from_node
+            links.new(i.from_node.outputs[0],node_mixshader.inputs[0])     
 
 class Tools_OT_setColorID(Operator):
     bl_idname = "redhalo.set_color_id"
